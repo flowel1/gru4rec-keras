@@ -32,9 +32,29 @@ In the TOP1 loss, item i's constribution is instead given by
 
 \frac{1}{N_s} \sum_{j=1}^{N_s} \left\{ \sigma(\hat{r}_{s_j} - \hat{r}_{s_i}) + \sigma(\hat{r}_{s_j}^2)\right\}
 
+To calculate the loss contribution of a given sample, we can exploit the following formula (assuming for the moment that we do no sampling, i.e., that all items are considered):
 
+\begin{bmatrix}
+\hat{r}_{s_i} - \hat{r}_1 \phantom{-1} \\ 
+\hat{r}_{s_i} - \hat{r}_2 \phantom{-1} \\ 
+\vdots 
+\\ 
+\hat{r}_{s_i} - \hat{r}_{\text{n\_items}}\\ 
+\end{bmatrix} = \left\{ \begin{bmatrix}
+1\\ 
+1 \\ 
+\vdots 
+\\ 
+1\\ 
+\end{bmatrix} \cdot \text{y\_true}_s - I \right\} \cdot \begin{bmatrix}
+\hat{r}_1 \phantom{-1} \\ 
+\hat{r}_2 \phantom{-1} \\ 
+\vdots 
+\\ 
+\hat{r}_{\text{n\_items}}\\ 
+\end{bmatrix} 
 
-
+where y_true_s is the one-hot encoding representation of the next item for the current sample (ground truth).
 
 
 
