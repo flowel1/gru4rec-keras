@@ -24,35 +24,17 @@ The sampling strategy is not specified explicitly in the article. The Tensorflow
 
 In the BPR loss, each sample s contributes to the final loss by an amount of
 
-- \frac{1}{N_s} \sum_{j=1}^{N_s} \log (\sigma(\hat{r}_i^{(s)} - \hat{r}_j^{(s)})))
+![alt text](https://github.com/flowel1/gru4rec-keras/blob/master/images/bpr.svg)
 
 where si is the ground truth for sample s (= index of the next item in the session) and the sj are the indices of the negative examples; the notation sj underlines the fact that the indices of the sampled items may vary across different samples.
 
 In the TOP1 loss, item i's constribution is instead given by
 
-\frac{1}{N_s} \sum_{j=1}^{N_s} \left\{ \sigma(\hat{r}_{s_j} - \hat{r}_{s_i}) + \sigma(\hat{r}_{s_j}^2)\right\}
+![alt text](https://github.com/flowel1/gru4rec-keras/blob/master/images/top1.svg)
 
 To calculate the loss contribution of a given sample, we can exploit the following formula (assuming for the moment that we do no sampling, i.e., that all items are considered):
 
-\begin{bmatrix}
-\hat{r}_{s_i} - \hat{r}_1 \phantom{-1} \\ 
-\hat{r}_{s_i} - \hat{r}_2 \phantom{-1} \\ 
-\vdots 
-\\ 
-\hat{r}_{s_i} - \hat{r}_{\text{n\_items}}\\ 
-\end{bmatrix} = \left\{ \begin{bmatrix}
-1\\ 
-1 \\ 
-\vdots 
-\\ 
-1\\ 
-\end{bmatrix} \cdot \text{y\_true}_s - I \right\} \cdot \begin{bmatrix}
-\hat{r}_1 \phantom{-1} \\ 
-\hat{r}_2 \phantom{-1} \\ 
-\vdots 
-\\ 
-\hat{r}_{\text{n\_items}}\\ 
-\end{bmatrix} 
+![alt text](https://github.com/flowel1/gru4rec-keras/blob/master/images/loss-formula.svg)
 
 where y_true_s is the one-hot encoding representation of the next item for the current sample (ground truth).
 
