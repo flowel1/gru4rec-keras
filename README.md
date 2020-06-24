@@ -1,21 +1,21 @@
 # GRU4Rec: Keras implementation
 GRU4Rec is a **recommendation algorithm** specifically developed for session-based problems. Recommendations are calculated taking into account the whole history of user interactions and also the temporal order in which they have occurred.
 
-Each session is represented as a sequence of items, or item IDs (e.g. visited pages on a website). The input to the network is the one-hot vector representing the current item and the target to predict is the next item in the sequence - i.e., the next item the user will interact with. Sample tasks of this type are next click prediction and intent prediction.
+Each session is represented as a sequence of items, or item IDs (e.g. visited pages on a website). The input to the network is the one-hot vector representing the current item and the target to predict is the next item in the sequence - i.e., the next item the user will interact with. This framework includes next click prediction and intent prediction tasks.
 
-This Keras implementation is meant to provide a quick and easy-to-use experimental version. The model is quite non-standard, so more low-level frameworks like Tensorflow can be used to provide additional flexibility. The implementation is based on the original article [1] and on the Tensorflow implementation at https://github.com/Songweiping/GRU4Rec_TensorFlow.
+This Keras implementation is meant to provide a quick and easy-to-use experimental version. The model is quite non-standard, so more low-level frameworks like Tensorflow can be used to provide additional flexibility. This implementation is based on the original article [1] and on the Tensorflow implementation at https://github.com/Songweiping/GRU4Rec_TensorFlow (gru4rec_BP version).
 
 ## Model review
 
 In general, sessions may have widly varying lengths, from 2 to several hundreds. In these cases, padding is typically used to reduce all sequences to the same fixed length. The authors of GRU4Rec, however, choose another approach, namely session-parallel mini-batches, which has the advantage of being faster. The batch creation method is explained very clearly in the original article [1]. Essentially, each element in the batch contains a single item for one particular session, the corresponding target being the next item in the same session. At the following iteration, each batch element is updated to contain the following item in the same session. When one session finishes, the corresponding place in the batch is immediately occupied by the first element of another session, and so on. This approach has the advantage of not posing any constraints on the maximum or minimum sequence length.
 
-A GRU layer (or multiple stacked GRU layers) is used with only **one timestep**. The sequence memory is still maintained thanks to the fact that the network is **stateful** - i.e., the hidden state is not reset when the batch changes. The hidden state has shape (batch_size, n_hidden), where batch_size is the batch_size and n_hidden is the number of hidden units. So, each session in the batch has its own dedicated hidden state of size n_hidden. When one of the sessions in the batch finishes, the corresponding hidden state is reset to 0.
+A GRU layer (or multiple stacked GRU layers) is used with only **one timestep**. The sequence memory is still maintained thanks to the fact that the network is **stateful** - i.e., the hidden state is not reset when the batch changes. The hidden state has shape (batch_size, n_hidden), where batch_size is the batch_size and n_hidden is the number of hidden units. So, each session in the batch has its own dedicated hidden state of size n_hidden (rnn_size in the Tensorflow implementation). When one of the sessions in the batch finishes, the corresponding hidden state is reset to 0.
 
-The GRU layer takes as input the one-hot representations directly. An additional embedding layer can optionally be added in-between, but the authors reported it did not improve performance (at least when the number of items is very large, like hundreds of thousands, as in many real-world recommender systems).
+The GRU layer takes as input the one-hot representations directly. An additional embedding layer can optionally be added in-between, but the authors reported it did not improve performance (at least when the number of items was very large, like hundreds of thousands, which is the case in many real-world recommender systems).
 
 As a loss function, categorical cross-entropy may be used, since this is technically a multi-class classification problem. However, the authors propose two different losses, **BPR** and **TOP1**, that take into account the difference in score between the positive class (item) and the negative classes and seem therefore more suitable for a recommendation framework.
 
-In both these two losses, for each sample s, Ns other items are sampled (with Ns small, say of the order of the batch size) and the score of the ground truth item is compared against the scores of the sampled items ("negative samples") instead of being just considered on its own as in the categorical cross-entropy loss.
+In both these losses, for each sample s, Ns other items are sampled (with Ns small, say of the order of the batch size) and the score of the ground truth item is compared against the scores of the sampled items ("negative samples") instead of being just considered on its own as in the categorical cross-entropy loss.
 
 The sampling strategy is not specified explicitly in the article. The Tensorflow implementation takes the other items in the batch as negative samples, which has the advantage of being easier to implement and making computations more efficient.
 
@@ -42,10 +42,10 @@ For the batch-based sampling procedure to be valid, the ground truths (next item
 where y_true_s is the one-hot encoding representation of the next item for the current sample (ground truth).
 
 ## References
-[1] Balázs Hidasi, Alexandros Karatzoglou, Linas Baltrunas, Domonkos Tikk, "Session-based Recommendations with Recurrent Neural Networks", arXiv:1511.06939v4, Mar 2016
+[1] Balázs Hidasi, Alexandros Karatzoglou, Linas Baltrunas, Domonkos Tikk, _Session-based Recommendations with Recurrent Neural Networks_, arXiv:1511.06939v4, Mar 2016
 
-[2] Shlomo Berkovsky, Ivan Cantador, Domonkos Tikk, "Collaborative Recommendations: Algorithms, Practical Challenges And Applications", pp. 105-110, World Scientific Publishing Co. Pte. Ltd., 2019
+[2] Shlomo Berkovsky, Ivan Cantador, Domonkos Tikk, _Collaborative Recommendations: Algorithms, Practical Challenges And Applications_, pp. 105-110, World Scientific Publishing Co. Pte. Ltd., 2019
 
-[3] Jianmo Ni, Larry Muhlstein, Julian McAuley, "Modeling heart rate and activity data for personalized fitness recommendation", in Proc. of the 2019 World Wide Web Conference (WWW'19), San Francisco, US, May. 2019 (for the dataset)
+[3] Jianmo Ni, Larry Muhlstein, Julian McAuley, _Modeling heart rate and activity data for personalized fitness recommendation_, in Proc. of the 2019 World Wide Web Conference (WWW'19), San Francisco, US, May. 2019 (for the dataset)
 
 
